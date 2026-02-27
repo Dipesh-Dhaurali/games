@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tic Tac Toe</title>
+<style>
+:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--accent:#22c55e}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#0b1220,#0f172a);color:var(--text);font-family:Inter,Segoe UI,system-ui,Arial,sans-serif;display:grid;place-items:center;min-height:100vh}
+.wrap{width:min(520px,94vw);background:var(--panel);border:1px solid #1f2937;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.35);padding:18px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.cell{aspect-ratio:1/1;background:#0b1323;border-radius:14px;display:grid;place-items:center;font:700 40px Segoe UI;cursor:pointer}
+.status{margin-top:10px;font-size:18px}
+.muted{color:var(--muted)}
+.actions{display:flex;gap:10px;margin-top:10px}
+button{font:600 14px Segoe UI;padding:10px;border:none;border-radius:10px;background:var(--accent);color:#051c10;cursor:pointer}
+.ghost{background:#1f2937;color:var(--text)}
+.win{background:#ffd54f;color:#111827}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Tic Tac Toe</h1>
+  <div class="actions">
+    <button onclick="setMode(false)">1v1</button>
+    <button class="ghost" onclick="setMode(true)">1vComputer</button>
+    <button class="ghost" onclick="reset()">Reset</button>
+    <a class="ghost" href="index.html" style="text-decoration:none;display:inline-block;text-align:center">Back</a>
+  </div>
+  <div class="status" id="status">Turn: X (1v1)</div>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+let board=Array(9).fill('')
+let current='X'
+let gameOver=false
+let vsAI=false
+const statusEl=document.getElementById('status')
+const grid=document.getElementById('grid')
+for(let i=0;i<9;i++){const d=document.createElement('div');d.className='cell';d.onclick=()=>clickCell(i);grid.appendChild(d)}
+function setMode(ai){vsAI=ai;reset();statusEl.textContent=vsAI?'Turn: X (1vComputer)':'Turn: X (1v1)'}
+function clickCell(i){
+  if(gameOver||board[i])return
+  board[i]=current
+  grid.children[i].textContent=current
+  const w=winner()
+  if(w==='Draw'){statusEl.textContent='Draw';gameOver=true;return}
+  if(w){highlight(w.line);statusEl.textContent=`${w.player} wins`;gameOver=true;return}
+  current=current==='X'?'O':'X'
+  if(vsAI){aiMove()}else{statusEl.textContent=`Turn: ${current}`}
+}
+function aiMove(){
+  if(gameOver||current!=='O')return
+  const empty=board.map((v,i)=>v?null:i).filter(v=>v!==null)
+  if(!empty.length){statusEl.textContent='Draw';gameOver=true;return}
+  const i=empty[Math.floor(Math.random()*empty.length)]
+  board[i]='O'
+  grid.children[i].textContent='O'
+  const w=winner()
+  if(w==='Draw'){statusEl.textContent='Draw';gameOver=true;return}
+  if(w){highlight(w.line);statusEl.textContent=`${w.player} wins`;gameOver=true;return}
+  current='X'
+  statusEl.textContent='Turn: X'
+}
+function winner(){
+  const lines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]
+  for(const [a,b,c] of lines){if(board[a]&&board[a]===board[b]&&board[a]===board[c])return {player:board[a],line:[a,b,c]}}
+  if(board.every(Boolean))return 'Draw'
+  return null
+}
+function highlight(line){for(const i of line){grid.children[i].classList.add('win')}}
+function reset(){
+  board=Array(9).fill('')
+  current='X'
+  gameOver=false
+  for(const c of grid.children){c.textContent='';c.classList.remove('win')}
+  statusEl.textContent=vsAI?'Turn: X (1vComputer)':'Turn: X (1v1)'
+}
+</script>
+</body>
+</html>

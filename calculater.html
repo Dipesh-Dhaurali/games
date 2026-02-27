@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Basic Calculator</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;display:grid;place-items:center;min-height:100vh;font-family:system-ui,Segoe UI,Arial,sans-serif;background:#0f172a;color:#e5e7eb}
+    .calc{width:min(360px,94vw);background:#111827;border:1px solid #1f2937;border-radius:14px;padding:14px}
+    .display{width:100%;border:none;border-radius:10px;background:#0b1323;color:#e5e7eb;font:600 26px/1.4 system-ui;padding:12px;text-align:right;outline:none}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+    button{border:none;border-radius:10px;padding:12px;font:600 18px system-ui;background:#1f2937;color:#e5e7eb;cursor:pointer}
+    .accent{background:#22c55e;color:#041b10}
+    .wide{grid-column:span 4}
+  </style>
+</head>
+<body>
+  <div class="calc">
+    <input id="disp" class="display" readonly />
+    <div id="keys" class="grid"></div>
+    <button class="accent wide" onclick="equals()">=</button>
+  </div>
+  <script>
+    const disp=document.getElementById('disp')
+    const k=[
+      ['C','⌫','(',')'],
+      ['7','8','9','/'],
+      ['4','5','6','*'],
+      ['1','2','3','-'],
+      ['0','.','+','Ans']
+    ]
+    const keys=document.getElementById('keys')
+    let last=null
+    k.flat().forEach(t=>{
+      const b=document.createElement('button');b.textContent=t;b.onclick=()=>press(t);keys.appendChild(b)
+    })
+    document.addEventListener('keydown',e=>{
+      const c=e.key
+      if('0123456789.+-*/()'.includes(c)) disp.value+=c
+      else if(c==='Enter') equals()
+      else if(c==='Escape') disp.value=''
+      else if(c==='Backspace') disp.value=disp.value.slice(0,-1)
+    })
+    function press(t){
+      if(t==='C'){disp.value='';return}
+      if(t==='⌫'){disp.value=disp.value.slice(0,-1);return}
+      if(t==='Ans'){if(last!=null) disp.value+=String(last);return}
+      disp.value+=t
+    }
+    function equals(){
+      const expr=disp.value.trim()
+      if(!expr){return}
+      try{
+        const r=evaluate(expr)
+        last=r
+        disp.value=String(r)
+      }catch{
+        disp.value='Error'
+      }
+    }
+    function evaluate(expr){
+      const tokens=expr.match(/(\d*\.\d+|\d+|[+\-*/()])/g)||[]
+      const opsSet=new Set(['+','-','*','/'])
+      const prec={'u-':3,'u+':3,'*':2,'/':2,'+':1,'-':1}
+      const rightAssoc={'u-':true,'u+':true}
+      const out=[],ops=[]
+      for(let i=0;i<tokens.length;i++){
+        let t=tokens[i], prev=tokens[i-1]
+        const unary=(t==='+'||t==='-') && (i===0 || opsSet.has(prev) || prev==='(')
+        if(unary) t = (t==='+')?'u+':'u-'
+        if(/^\d/.test(t)){
+          out.push(parseFloat(t))
+        }else if(t in prec){
+          while(ops.length){
+            const o=ops[ops.length-1]
+            if(o in prec && (prec[o]>prec[t] || (prec[o]===prec[t] && !rightAssoc[t]))){out.push(ops.pop())}else break
+          }
+          ops.push(t)
+        }else if(t==='('){
+          ops.push(t)
+        }else if(t===')'){
+          while(ops.length && ops[ops.length-1]!=='(') out.push(ops.pop())
+          ops.pop()
+        }else{
+          throw new Error('bad')
+        }
+      }
+      while(ops.length) out.push(ops.pop())
+      const st=[]
+      for(const t of out){
+        if(typeof t==='number') st.push(t)
+        else if(t==='u+'||t==='u-'){
+          const a=st.pop(); if(a===undefined) throw new Error('bad'); st.push(t==='u+'?+a:-a)
+        }else{
+          const b=st.pop(), a=st.pop(); if(a===undefined||b===undefined) throw new Error('bad')
+          st.push(t==='*'?a*b:t==='/'?a/b:t==='+'?a+b:a-b)
+        }
+      }
+      if(st.length!==1 || !isFinite(st[0])) throw new Error('bad')
+      return st[0]
+    }
+  </script>
+</body>
+</html>

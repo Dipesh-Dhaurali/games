@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guess Number 1–50</title>
+<style>
+:root{--bg:#0f172a;--panel:#111827;--text:#e5e7eb;--muted:#94a3b8;--accent:#22c55e}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#0b1220,#0f172a);color:var(--text);font-family:Inter,Segoe UI,system-ui,Arial,sans-serif;display:grid;place-items:center;min-height:100vh}
+.box{width:min(500px,92vw);background:var(--panel);border:1px solid #1f2937;border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.35);padding:18px}
+h1{margin:0 0 10px}
+.row{display:flex;gap:10px}
+input{flex:1;font:600 20px Segoe UI;padding:10px;border-radius:10px;border:none;background:#0b1323;color:var(--text);text-align:center}
+button{font:600 16px Segoe UI;padding:10px 12px;border-radius:10px;border:none;background:var(--accent);color:#051c10;cursor:pointer}
+.feedback{margin-top:10px;color:var(--text);font-size:18px}
+.status{color:var(--muted);font-size:14px}
+.history{margin-top:12px;height:160px;overflow:auto;background:#0b1323;border-radius:12px;padding:10px}
+.item{padding:6px 8px;border-bottom:1px solid #1f2937}
+.item:last-child{border-bottom:none}
+.muted{color:var(--muted)}
+.actions{display:flex;gap:10px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="box">
+  <h1>Guess the Number</h1>
+  <div class="row">
+    <input id="num" placeholder="1–50" />
+    <button id="guess">Guess</button>
+  </div>
+  <div class="feedback" id="fb"></div>
+  <div class="status" id="st">Attempts: 0</div>
+  <div class="history" id="hist"></div>
+  <div class="actions">
+    <button id="new">New Game</button>
+    <a href="index.html" style="flex:1;text-align:center;text-decoration:none;background:#1f2937;color:#e5e7eb;padding:10px;border-radius:10px">Back</a>
+  </div>
+</div>
+<script>
+let target=Math.floor(Math.random()*50)+1
+let attempts=0
+const num=document.getElementById('num')
+const fb=document.getElementById('fb')
+const st=document.getElementById('st')
+const hist=document.getElementById('hist')
+document.getElementById('guess').onclick=makeGuess
+document.getElementById('new').onclick=reset
+num.addEventListener('keydown',e=>{if(e.key==='Enter')makeGuess()})
+function makeGuess(){
+  const v=num.value.trim()
+  if(!/^\d+$/.test(v)){fb.textContent='Enter a valid number';return}
+  const n=parseInt(v,10)
+  if(n<1||n>50){fb.textContent='Number must be 1–50';return}
+  attempts++
+  if(n<target){fb.textContent='Too low';addHist(n,'Too low')}
+  else if(n>target){fb.textContent='Too high';addHist(n,'Too high')}
+  else{fb.textContent=`Correct! The number was ${target}`;addHist(n,'Correct');document.getElementById('guess').disabled=true}
+  st.textContent=`Attempts: ${attempts}`
+  num.value=''
+  num.focus()
+}
+function addHist(n,msg){
+  const d=document.createElement('div')
+  d.className='item'
+  d.textContent=`${n} - ${msg}`
+  hist.appendChild(d)
+  hist.scrollTop=hist.scrollHeight
+}
+function reset(){
+  target=Math.floor(Math.random()*50)+1
+  attempts=0
+  fb.textContent=''
+  st.textContent='Attempts: 0'
+  hist.innerHTML=''
+  document.getElementById('guess').disabled=false
+  num.value=''
+  num.focus()
+}
+</script>
+</body>
+</html>
