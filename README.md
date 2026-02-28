@@ -96,23 +96,3 @@ snakegame/
 - Styles prioritize responsiveness and clean UI.
 
 
-## Deploy
-
-### GitHub Pages
-
-1. Push this folder to GitHub.
-2. Enable GitHub Pages (Settings → Pages → Source: `main` branch → save).
-3. Your site will be available at `https://<your-username>.github.io/<repo-name>/`.
-
-Update the “Download .exe” links in `index.html` to point to your Releases for public downloads.
-
-
-## Contributing
-
-Feel free to open issues or submit pull requests to improve games, UI, or add features.
-
-
-## License
-
-Add your preferred license (e.g., MIT, Apache-2.0) to a `LICENSE` file.
-*** End Patch***}ৰাকীassistant to=functions.apply_patchancellable ***!
